@@ -2,20 +2,17 @@
 const path = require('path');
 const webpack = require('webpack')
 
-//new from devstkt................................................>
+//new from devstkt
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const WebpackMd5Hash = require('webpack-md5-hash');
 // const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 // const CleanWebpackPlugin = require('clean-webpack-plugin');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const UglifyJS = require('uglify-es');
-//.................................................................>
 
-
-
-// const VENDOR_LIBS = [
-//   'babel-polyfill', 'redux', 'react-redux', 'react-dom'
-// ]
+const VENDOR_LIBS = [
+  'babel-polyfill', 'redux', 'react-redux', 'react-dom'
+]
 
 //taken from devstkt.....................................>
 const DefaultUglifyJsOptions = UglifyJS.default_options();
@@ -30,14 +27,12 @@ compress.unused = true;
 
 module.exports = env => {
   return {
-    mode: 'development',
     entry: {
-      FirstComp: './assets/js/components/FirstComp.js',
-      // regularJS: './assets/js/regularJS.js',
+      firstComp: './assets/js/firstComp/firstComp.js',
+      regularJS: './assets/js/regularJS.js',
       vendor: VENDOR_LIBS
     },
-    devtool: 'inline-source-map',
-    output: { path: path.resolve(__dirname, '/public/js/components'),
+    output: { path: path.resolve(__dirname, 'public/js/components'),
               filename: '[name].js'
               },
     module: {
@@ -46,12 +41,12 @@ module.exports = env => {
           test: /\.js$/,
           exclude: /node_modules/,
           use: 'babel-loader'
-          options: {
-            presets: [
-              '@babel/preset-env',
-              '@babel/preset-react'
-            ]
-          }
+          // options: {
+          //   presets: [
+          //     '@babel/preset-env',
+          //     '@babel/preset-react'
+          //   ]
+          // }
         },
         {
               test: /\.scss$/,
@@ -70,34 +65,21 @@ module.exports = env => {
       ]
     },
     plugins: [
-    			// new MiniCssExtractPlugin({
-    			// 	filename: 'styles.css' // 'style.[contenthash].css' put this if you want to get hashed files to cache bust
-    			// }), // new HtmlWebpackPlugin({
-    			// // 	inject: false,
-    			// // 	hash: true,
-    			// // 	template: './assets/index.html',
-    			// // 	children: false,
-    			// // 	filename: '../index.html'
-    			// // }),
-    			new WebpackMd5Hash()
-    		],
-    		optimization: {
-    			splitChunks: { chunks: 'all', minSize: 0 },
-    			minimize: true,
-    			minimizer: [
-    				new UglifyJsPlugin({
-    					uglifyOptions: {
-    						compress,
-    						mangle: false,
-    						output: {
-    							beautify: env.NODE_ENV !== 'production' ? true : false
-    						}
-    					}
-    				})
-    			],
-    			usedExports: true,
-    			sideEffects: true
-    		}
+              new webpack.optimize.CommonsChunkPlugin({
+                  name: 'vendor',
+                  minChunks: function (module) {
+                     // this assumes your vendor imports exist in the node_modules directory
+                     return module.context && module.context.indexOf('node_modules') !== -1;
+                  }
+              }),
+      //         new webpack.optimize.UglifyJsPlugin({
+      //   sourceMap: options.devtool && (options.devtool.indexOf("sourcemap") >= 0 || options.devtool.indexOf("source-map") >= 0)
+      // }),
+      // new webpack.Define
+              // new webpack.optimize.CommonsChunkPlugin({
+              //     name: 'manifest' //But since there are no more common modules between them we end up with just the runtime code included in the manifest file
+              // })
+          ]
   }
 
 };

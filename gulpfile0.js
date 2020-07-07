@@ -17,28 +17,28 @@ const { src, dest, watch, series, parallel } = require('gulp');
 
 console.log('hello');
 
-// function jsTask(){
-//     return src('./assets/js/**/*')
-//     .pipe(babel({
-//       presets: [
-//         '@babel/preset-env',
-//         '@babel/preset-react'
-//
-//       ]}))
-//       .pipe(sourcemaps.write('.'))
-//         .pipe(dest('./public/js/components')
-//     );
-// }
+function jsTask(){
+    return src('./assets/js/**/*')
+    .pipe(babel({
+      presets: [
+        '@babel/preset-env',
+        '@babel/preset-react'
 
-
-function webjack(cb) {
-  return exec('npm run dev:webpack', function (err, stdout, stderr) {
-    console.log(stdout);
-    console.log(stderr);
-    cb(err);
-  })
-  cb();
+      ]}))
+      .pipe(sourcemaps.write('.'))
+        .pipe(dest('./public/js/components')
+    );
 }
+
+
+// function webjack(cb) {
+//   return exec('npm run dev:webpack', function (err, stdout, stderr) {
+//     console.log(stdout);
+//     console.log(stderr);
+//     cb(err);
+//   })
+//   cb();
+// }
 
 function styles(cb) {
   return gulp
@@ -78,14 +78,13 @@ function browserSionic(cb) {
 }
 
 exports.styles;
-exports.default = parallel(series(styles, webjack,
-  function defJam(cb) {
-    watch('./assets/sass/**/*', parallel(styles));
-    watch('./assets/js/**/*', parallel(webjack));
-    watch(['./public/**/*', './public/*']).on('change', reload);
-    cb();
-  }), 
-  series(browserSionic));
+exports.default = parallel(series(function defJam(cb) {
+
+  watch('./assets/sass/**/*', parallel(styles));
+  watch('./assets/js/**/*', parallel(jsTask));
+  watch(['./public/**/*', './public/*']).on('change', reload);
+  cb();
+}, styles, jsTask), series(browserSionic));
 // exports.default = parallel(series(styles, webjack), series(browserSionic)), series(defJam);
 // exports.build = default(parallel(series(styles, webjack), series(browserSionic)), series(defJam));
 // exports.build = series(clean, parallel(css, javascript));
